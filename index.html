@@ -4,119 +4,136 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>タクマ塾岩国校 収支・塾生管理システム</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#F6F5F0; --surface:#FFFFFF; --surface-2:#EFEDE4;
-    --border:#DEDBCF; --border-strong:#C7C3B4;
-    --text-primary:#1E241F; --text-secondary:#5B6058; --text-muted:#8B8F84;
-    --accent:#1F6F4A; --accent-dark:#154D33; --accent-bg:#E3EFE8;
-    --danger:#B3413B; --radius:10px;
+    --bg:#F3F6F6; --surface:#FFFFFF; --surface-2:#EAF1F1;
+    --border:#E1E7E7; --border-strong:#C7D2D2;
+    --text-primary:#12181A; --text-secondary:#5B6B6D; --text-muted:#8A9799;
+    --accent:#0FB8C4; --accent-dark:#0A8A93; --accent-bg:#E3F7F8;
+    --danger:#D6483F; --warn:#E0A83A; --good:#1FA971; --radius:14px;
   }
   *{box-sizing:border-box;}
-  body{margin:0;font-family:"Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;}
-  .wrap{max-width:1040px;margin:0 auto;padding:24px 16px 64px;}
-  header{margin-bottom:16px;}
-  header h1{font-size:20px;font-weight:600;margin:0 0 4px;}
-  header p{font-size:13px;color:var(--text-secondary);margin:0;}
+  body{margin:0;font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 20px 100px;}
+  header{margin-bottom:8px;display:flex;align-items:center;gap:14px;}
+  header .logo-mark{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));flex:none;}
+  header h1{font-size:19px;font-weight:700;margin:0 0 2px;letter-spacing:-0.01em;}
+  header p{font-size:12.5px;color:var(--text-secondary);margin:0;}
 
-  .fy-nav{display:flex;align-items:center;gap:12px;margin:14px 0 18px;}
-  .fy-nav #fy-label{font-size:15px;font-weight:600;}
+  .fy-nav{display:flex;align-items:center;gap:10px;margin:18px 0 14px;}
+  .fy-nav #fy-label{font-size:14px;font-weight:700;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-family:'Outfit',sans-serif;}
 
-  .tabs{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:20px;flex-wrap:wrap;}
-  .tab-btn{padding:10px 16px;font-size:14px;background:none;border:none;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;}
-  .tab-btn.active{color:var(--accent-dark);border-bottom-color:var(--accent);font-weight:600;}
+  .tabs{display:flex;gap:2px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap;}
+  .tab-btn{padding:12px 18px;font-size:13.5px;font-weight:600;background:none;border:none;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;font-family:inherit;}
+  .tab-btn.active{color:var(--accent-dark);border-bottom-color:var(--accent);}
   .tab-panel{display:none;}
   .tab-panel.active{display:block;}
 
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px;}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;}
-  .kpi-card .label{font-size:12px;color:var(--text-secondary);margin-bottom:4px;}
-  .kpi-card .value{font-size:22px;font-weight:600;}
+  .bottom-nav{display:none;}
+
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:24px;}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .kpi-card .label{font-size:11.5px;color:var(--text-secondary);margin-bottom:6px;font-weight:600;}
+  .kpi-card .value{font-size:24px;font-weight:700;font-family:'Outfit',sans-serif;}
   .kpi-card .value.neg{color:var(--danger);}
+  .kpi-card.highlight{background:linear-gradient(135deg,var(--accent),var(--accent-dark));border-color:transparent;}
+  .kpi-card.highlight .label{color:#DFF9FA;}
+  .kpi-card.highlight .value{color:#fff;}
 
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:20px;}
-  .card h2{font-size:15px;font-weight:600;margin:0 0 14px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:20px;}
+  .card h2{font-size:14.5px;font-weight:700;margin:0 0 14px;letter-spacing:-0.01em;}
 
-  label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;}
-  input[type=text],input[type=number],input[type=month],select,textarea{width:100%;padding:7px 9px;border:1px solid var(--border-strong);border-radius:6px;font-size:14px;background:var(--surface);color:var(--text-primary);font-family:inherit;}
+  label{font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;font-weight:600;}
+  input[type=text],input[type=number],input[type=month],select,textarea{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:8px;font-size:14px;background:var(--surface);color:var(--text-primary);font-family:inherit;}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px;}
   .field{margin-bottom:12px;}
   .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;}
 
-  button.primary{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:9px 18px;font-size:14px;font-weight:600;cursor:pointer;}
+  button.primary{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
   button.primary:hover{background:var(--accent-dark);}
   button.primary:disabled{opacity:0.6;cursor:default;}
-  button.ghost{background:none;border:1px solid var(--border-strong);border-radius:6px;padding:8px 14px;font-size:13px;cursor:pointer;color:var(--text-primary);}
+  button.ghost{background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;padding:9px 15px;font-size:13px;cursor:pointer;color:var(--text-primary);font-weight:600;font-family:inherit;}
   button.ghost:hover{background:var(--surface-2);}
-  button.link-danger{background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:2px 4px;white-space:nowrap;}
+  button.link-danger{background:none;border:none;color:var(--danger);font-size:12px;cursor:pointer;padding:2px 4px;white-space:nowrap;font-weight:600;}
   .btn-row{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;align-items:center;}
 
   table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  th,td{padding:7px 6px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
+  th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--border);white-space:nowrap;}
   th:first-child,td:first-child{text-align:left;}
-  thead th{color:var(--text-secondary);font-weight:600;border-bottom:1px solid var(--border-strong);}
+  thead th{color:var(--text-secondary);font-weight:700;border-bottom:1px solid var(--border-strong);font-size:11.5px;text-transform:uppercase;letter-spacing:0.02em;}
   .table-scroll{overflow-x:auto;}
-  .empty{color:var(--text-muted);font-size:13px;padding:16px 0;text-align:center;}
+  .empty{color:var(--text-muted);font-size:13px;padding:20px 0;text-align:center;}
   .note{font-size:12px;color:var(--text-muted);margin-top:8px;}
 
   .chart-box{position:relative;width:100%;height:280px;margin-bottom:8px;}
   .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-secondary);margin-bottom:6px;}
   .legend span{display:inline-flex;align-items:center;gap:5px;}
-  .legend i{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .legend i{width:10px;height:10px;border-radius:3px;display:inline-block;}
 
   .metric-picker{display:flex;flex-wrap:wrap;gap:4px 16px;margin-bottom:12px;}
-  .metric-picker label{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:400;color:var(--text-primary);white-space:nowrap;}
+  .metric-picker label{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--text-primary);white-space:nowrap;}
   .metric-picker input{width:auto;margin:0;}
-  .metric-swatch{width:9px;height:9px;border-radius:2px;display:inline-block;}
+  .metric-swatch{width:9px;height:9px;border-radius:3px;display:inline-block;}
 
-  .grid-scroll{overflow:auto;max-height:520px;border:1px solid var(--border);border-radius:8px;}
+  .grid-scroll{overflow:auto;max-height:520px;border:1px solid var(--border);border-radius:12px;}
   table.grid-table{font-size:13px;}
-  table.grid-table th,table.grid-table td{padding:6px 4px;text-align:center;white-space:nowrap;}
+  table.grid-table th,table.grid-table td{padding:7px 4px;text-align:center;white-space:nowrap;}
   table.grid-table thead th{position:sticky;top:0;background:var(--surface-2);z-index:2;}
   table.grid-table .col-name{text-align:left;min-width:110px;position:sticky;left:0;background:var(--surface);z-index:1;}
   table.grid-table thead .col-name{z-index:3;}
-  table.grid-table .col-name input{border:none;background:transparent;font-size:13px;width:100%;padding:2px;}
-  table.grid-table .col-grade input{width:46px;border:1px solid var(--border-strong);border-radius:5px;padding:2px;text-align:center;}
+  table.grid-table .col-name input{border:none;background:transparent;font-size:13px;width:100%;padding:2px;font-family:inherit;}
+  table.grid-table .col-grade input{width:46px;border:1px solid var(--border-strong);border-radius:6px;padding:2px;text-align:center;}
   table.grid-table .col-trial{width:36px;}
-  table.grid-table .cell-month{width:34px;cursor:pointer;font-size:15px;color:var(--accent-dark);user-select:none;}
-  table.grid-table .cell-month:hover{background:var(--accent-bg);}
-  table.grid-table .cell-month.pause{color:var(--text-muted);font-size:13px;}
-  table.grid-table tfoot td{font-weight:600;border-top:2px solid var(--border-strong);border-bottom:none;background:var(--surface-2);position:sticky;bottom:0;}
+  table.grid-table .cell-month{width:34px;height:34px;cursor:pointer;font-size:14px;color:var(--accent-dark);user-select:none;border-radius:8px;}
+  table.grid-table .cell-month:not(:empty){background:var(--accent-bg);}
+  table.grid-table .cell-month:hover{filter:brightness(0.96);}
+  table.grid-table .cell-month.pause{color:var(--text-muted);font-size:12px;}
+  table.grid-table .cell-month.pause:not(:empty){background:var(--surface-2);}
+  table.grid-table tfoot td{font-weight:700;border-top:2px solid var(--border-strong);border-bottom:none;background:var(--surface-2);position:sticky;bottom:0;}
 
   .mini-table td, .mini-table th{text-align:left;}
   .mini-table td:not(:first-child), .mini-table th:not(:first-child){text-align:right;}
 
-  .ability-block{border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:12px;}
-  .ability-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
-  .ability-title{font-size:14px;font-weight:600;}
-  .ability-weight{font-size:11px;color:var(--text-secondary);background:var(--surface-2);padding:2px 8px;border-radius:10px;}
-  .ability-subtotal{font-size:12px;font-weight:600;color:var(--accent-dark);}
+  .ability-block{border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:12px;background:var(--surface);}
+  .ability-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .ability-title{font-size:13.5px;font-weight:700;}
+  .ability-weight{font-size:11px;color:var(--text-secondary);background:var(--surface-2);padding:3px 9px;border-radius:10px;font-weight:600;}
+  .ability-subtotal{font-size:16px;font-weight:700;color:var(--accent-dark);font-family:'Outfit',sans-serif;}
   .ability-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;}
   .item-row label{font-size:12px;margin-bottom:3px;}
-  .item-row select{padding:5px 7px;}
-  .overall-score{font-size:14px;font-weight:600;color:var(--accent-dark);margin:6px 0 14px;}
+  .item-row select{padding:6px 8px;}
+  .overall-score{font-size:15px;font-weight:700;color:var(--accent-dark);margin:6px 0 16px;padding:12px 16px;background:var(--accent-bg);border-radius:10px;display:inline-block;font-family:'Outfit',sans-serif;}
 
   .grid-scroll, .table-scroll{-webkit-overflow-scrolling:touch;}
 
   @media (max-width: 640px){
-    .wrap{padding:14px 10px 48px;}
-    header h1{font-size:17px;}
+    .wrap{padding:14px 10px 96px;}
+    header h1{font-size:16px;}
+    header .logo-mark{width:32px;height:32px;}
     .fy-nav{flex-wrap:wrap;justify-content:center;text-align:center;gap:8px;}
-    .tabs{gap:2px;}
-    .tab-btn{padding:8px 10px;font-size:12.5px;}
-    .card{padding:14px 14px;}
+    .tabs{display:none;}
+    .card{padding:16px 14px;}
     .chart-box{height:220px;}
     .kpi-grid{grid-template-columns:repeat(2,1fr);}
     input[type=text],input[type=number],input[type=month],select,textarea{font-size:16px;}
-    table.grid-table .cell-month{width:38px;font-size:16px;}
+    table.grid-table .cell-month{width:38px;height:38px;font-size:15px;}
     table.grid-table th,table.grid-table td{padding:8px 5px;}
     .btn-row button{flex:1 1 auto;}
+
+    .bottom-nav{display:flex;position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom));z-index:50;box-shadow:0 -4px 16px rgba(18,24,26,0.06);}
+    .bottom-nav .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 2px;font-size:10px;font-weight:600;border-bottom:none;margin-bottom:0;color:var(--text-muted);}
+    .bottom-nav .tab-btn .nav-icon{width:20px;height:20px;border-radius:7px;background:var(--surface-2);}
+    .bottom-nav .tab-btn.active{color:var(--accent-dark);}
+    .bottom-nav .tab-btn.active .nav-icon{background:var(--accent);}
   }
 </style>
 </head>
 <body>
 <div id="login-screen" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg);">
   <div class="card" style="max-width:360px;width:100%;">
+    <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));margin-bottom:14px;"></div>
     <h2 style="margin-top:0;">タクマ塾岩国校 管理システム</h2>
     <div class="field"><label for="login-email">メールアドレス</label><input type="email" id="login-email" autocomplete="username"></div>
     <div class="field"><label for="login-password">パスワード</label><input type="password" id="login-password" autocomplete="current-password"></div>
@@ -130,8 +147,11 @@
 <div id="app-root" style="display:none;">
 <div class="wrap">
   <header>
-    <h1>タクマ塾岩国校 収支・塾生管理システム</h1>
-    <p>階段図(塾生×月のマス目)で在籍状況を管理すると、収支と選手の成長記録が連動して管理できます。</p>
+    <div class="logo-mark"></div>
+    <div>
+      <h1>タクマ塾岩国校 収支・塾生管理システム</h1>
+      <p>階段図(塾生×月のマス目)で在籍状況を管理すると、収支と選手の成長記録が連動して管理できます。</p>
+    </div>
   </header>
 
   <div class="fy-nav">
@@ -151,6 +171,14 @@
     <button class="tab-btn" data-tab="growth">成長管理</button>
     <button class="tab-btn" data-tab="summary">成長サマリー</button>
     <button class="tab-btn admin-only-tab" data-tab="settings">設定</button>
+  </div>
+
+  <div class="bottom-nav" role="tablist">
+    <button class="tab-btn admin-only-tab" data-tab="dashboard"><span class="nav-icon"></span>集計</button>
+    <button class="tab-btn active" data-tab="grid"><span class="nav-icon"></span>階段図</button>
+    <button class="tab-btn" data-tab="growth"><span class="nav-icon"></span>成長</button>
+    <button class="tab-btn" data-tab="summary"><span class="nav-icon"></span>サマリー</button>
+    <button class="tab-btn admin-only-tab" data-tab="settings"><span class="nav-icon"></span>設定</button>
   </div>
 
   <!-- Dashboard -->
@@ -244,7 +272,7 @@
     <div class="card">
       <h2>レーダーチャート プレビュー</h2>
       <div class="chart-box"><canvas id="chartRadar" role="img" aria-label="Physical・Skill/Technic・Mental・Idea/Tacticsの4軸の成長度を示すレーダーチャート">選手の成長度レーダーチャート</canvas></div>
-      <div class="legend"><span><i style="background:#2a78d6"></i>選択中の月</span><span><i style="background:#C7C3B4"></i>前月</span></div>
+      <div class="legend"><span><i style="background:#0FB8C4"></i>選択中の月</span><span><i style="background:#C7D2D2"></i>前月</span></div>
     </div>
 
     <div class="card">
@@ -585,7 +613,7 @@ function renderCharts(rows){
   if (chartCount){ chartCount.data.labels = labels; chartCount.data.datasets[0].data = counts; chartCount.update(); }
   else {
     chartCount = new Chart(document.getElementById('chartCount'), {
-      type:'line', data:{ labels, datasets:[{ label:'在籍人数', data:counts, stepped:true, borderColor:'#2a78d6', backgroundColor:'#2a78d61A', fill:true, pointRadius:3, pointBackgroundColor:'#2a78d6' }] },
+      type:'line', data:{ labels, datasets:[{ label:'在籍人数', data:counts, stepped:true, borderColor:'#0FB8C4', backgroundColor:'#0FB8C41A', fill:true, pointRadius:3, pointBackgroundColor:'#0FB8C4' }] },
       options:{ responsive:true, maintainAspectRatio:false, scales:{ y:{ beginAtZero:true, ticks:{ precision:0 } }, x:{ grid:{ display:false } } }, plugins:{ legend:{ display:false } } }
     });
   }
@@ -1014,9 +1042,9 @@ function renderRadarChart(){
 }
 
 function scoreColor(pct){
-  if (pct >= 75) return '#DCEEE0';
-  if (pct >= 50) return '#FCEFC7';
-  return '#F6DEDC';
+  if (pct >= 75) return '#DCF3E7';
+  if (pct >= 50) return '#FBF0D2';
+  return '#FBDFDB';
 }
 
 function monthsWindow(startYm, count){
@@ -1087,7 +1115,7 @@ function renderRankingChart(rowsData, ym){
   else {
     chartRanking = new Chart(canvas, {
       type:'bar',
-      data:{ labels, datasets:[{ label:'総合スコア', data, backgroundColor:'#2a78d6' }] },
+      data:{ labels, datasets:[{ label:'総合スコア', data, backgroundColor:'#0FB8C4' }] },
       options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, scales:{ x:{ min:0, max:100 } }, plugins:{ legend:{ display:false } } }
     });
   }
@@ -1138,8 +1166,8 @@ async function buildReportDoc(targets, ym){
     const rec = s.growth[ym];
     const prevRec = s.growth[prevMonthStr(ym)] || null;
     const { labels, totals } = radarLabelsAndTotals(rec);
-    const datasets = [{ label:ym, data:totals, borderColor:'#2a78d6', backgroundColor:'#2a78d633', pointBackgroundColor:'#2a78d6' }];
-    if (prevRec) datasets.push({ label:prevMonthStr(ym), data:radarLabelsAndTotals(prevRec).totals, borderColor:'#C7C3B4', backgroundColor:'#C7C3B41A', pointBackgroundColor:'#C7C3B4', borderDash:[4,4] });
+    const datasets = [{ label:ym, data:totals, borderColor:'#0FB8C4', backgroundColor:'#0FB8C433', pointBackgroundColor:'#0FB8C4' }];
+    if (prevRec) datasets.push({ label:prevMonthStr(ym), data:radarLabelsAndTotals(prevRec).totals, borderColor:'#C7D2D2', backgroundColor:'#C7D2D21A', pointBackgroundColor:'#C7D2D2', borderDash:[4,4] });
     const chartImg = await renderChartToImage(labels, datasets);
     area.innerHTML = generatePageHTML(s, ym, rec, chartImg, fy);
     await new Promise(r => setTimeout(r, 60));
