@@ -146,15 +146,20 @@
   </div>
 
   <div class="tabs" role="tablist">
-    <button class="tab-btn active" data-tab="dashboard">ダッシュボード</button>
-    <button class="tab-btn" data-tab="grid">階段図</button>
+    <button class="tab-btn admin-only-tab" data-tab="dashboard">ダッシュボード</button>
+    <button class="tab-btn active" data-tab="grid">階段図</button>
     <button class="tab-btn" data-tab="growth">成長管理</button>
     <button class="tab-btn" data-tab="summary">成長サマリー</button>
-    <button class="tab-btn" data-tab="settings">設定</button>
+    <button class="tab-btn admin-only-tab" data-tab="settings">設定</button>
   </div>
 
   <!-- Dashboard -->
-  <div class="tab-panel active" id="tab-dashboard">
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="card" id="dashboard-locked-notice" style="display:none;">
+      <h2>🔒 管理者専用</h2>
+      <p class="note" style="margin-top:0;">収支・KPIなどの経営情報は、管理者権限を持つアカウントだけが閲覧できます。</p>
+    </div>
+    <div id="dashboard-content-wrapper">
     <div class="kpi-grid">
       <div class="kpi-card"><div class="label">現在の在籍人数</div><div class="value" id="kpi-current">-</div></div>
       <div class="kpi-card"><div class="label">年度 収入見込み</div><div class="value" id="kpi-revenue">-</div></div>
@@ -180,10 +185,11 @@
       </table>
       </div>
     </div>
+    </div>
   </div>
 
   <!-- Grid -->
-  <div class="tab-panel" id="tab-grid">
+  <div class="tab-panel active" id="tab-grid">
     <div class="card">
       <h2>階段図</h2>
       <p class="note" style="margin-top:0;">マスをクリックすると 空欄 → ★(在籍) → −(休会) → 空欄 の順で切り替わります。★の数がその月の月謝収入人数になります。</p>
@@ -746,14 +752,25 @@ function updateAdminUI(){
   const locked = document.getElementById('settings-locked-notice');
   const content = document.getElementById('settings-content-wrapper');
   const resetBtn = document.getElementById('btn-reset-students');
+  const dashLocked = document.getElementById('dashboard-locked-notice');
+  const dashContent = document.getElementById('dashboard-content-wrapper');
   if (isAdmin){
     locked.style.display = 'none';
     content.style.display = 'block';
     if (resetBtn) resetBtn.style.display = 'inline-block';
+    dashLocked.style.display = 'none';
+    dashContent.style.display = 'block';
   } else {
     locked.style.display = 'block';
     content.style.display = 'none';
     if (resetBtn) resetBtn.style.display = 'none';
+    dashLocked.style.display = 'block';
+    dashContent.style.display = 'none';
+  }
+  document.querySelectorAll('.admin-only-tab').forEach(b => b.style.display = isAdmin ? '' : 'none');
+  const activeTab = document.querySelector('.tab-btn.active');
+  if (!isAdmin && activeTab && activeTab.classList.contains('admin-only-tab')){
+    switchTab('grid');
   }
 }
 
