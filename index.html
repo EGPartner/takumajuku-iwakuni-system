@@ -122,7 +122,8 @@
     <div class="field"><label for="login-password">パスワード</label><input type="password" id="login-password" autocomplete="current-password"></div>
     <div class="btn-row"><button class="primary" id="btn-login" style="width:100%;justify-content:center;">ログイン</button></div>
     <p id="login-error" class="note" style="color:var(--danger);"></p>
-    <p class="note"><a href="#" id="btn-forgot-password">パスワードを忘れた場合はこちら</a></p>
+    <div class="btn-row"><button type="button" class="ghost" id="btn-forgot-password" style="width:100%;justify-content:center;">パスワードを忘れた場合はこちら</button></div>
+    <p id="forgot-password-status" class="note" style="min-height:16px;"></p>
     <p class="note">アカウントは管理者が発行します。ログイン情報が分からない場合は管理者にお問い合わせください。</p>
   </div>
 </div>
@@ -1274,22 +1275,24 @@ async function handleLogin(){
   }
 }
 
-async function handleForgotPassword(e){
-  e.preventDefault();
-  const errEl = document.getElementById('login-error');
+async function handleForgotPassword(){
+  const statusEl = document.getElementById('forgot-password-status');
   const email = document.getElementById('login-email').value.trim();
   if (!email){
-    errEl.style.color = 'var(--danger)';
-    errEl.textContent = 'まずメールアドレス欄に、ご自身のログイン用メールアドレスを入力してください。';
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = 'まずメールアドレス欄に、ご自身のログイン用メールアドレスを入力してください。';
     return;
   }
+  statusEl.style.color = 'var(--text-secondary)';
+  statusEl.textContent = '送信しています…';
   try {
     await auth.sendPasswordResetEmail(email);
-    errEl.style.color = 'var(--accent-dark)';
-    errEl.textContent = 'パスワード再設定用のメールを送信しました。メールボックスをご確認ください。';
+    statusEl.style.color = 'var(--accent-dark)';
+    statusEl.textContent = '✓ パスワード再設定用のメールを送信しました。メールボックス(迷惑メールフォルダも)をご確認ください。';
   } catch(err){
-    errEl.style.color = 'var(--danger)';
-    errEl.textContent = '送信に失敗しました: ' + err.message;
+    console.error(err);
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = '送信に失敗しました: ' + (err && err.message ? err.message : String(err));
   }
 }
 
