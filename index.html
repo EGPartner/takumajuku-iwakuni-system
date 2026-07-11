@@ -125,6 +125,7 @@
   .calendar-row .cr-type{font-weight:700;margin-bottom:2px;}
   .calendar-row .cr-loc, .calendar-row .cr-staff{color:var(--text-secondary);margin-bottom:2px;}
   .calendar-row .cr-note{color:var(--text-muted);font-size:12px;}
+  .calendar-row .cr-absent{color:var(--danger);font-size:12px;margin-top:4px;font-weight:600;}
   .calendar-row .cr-actions{flex:0 0 auto;}
 
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
@@ -135,6 +136,7 @@
   .cal-day .cd-num{font-weight:700;margin-bottom:3px;font-family:'Outfit',sans-serif;}
   .cal-day .cd-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:2px;}
   .cal-day .cd-dot.cancelled-dot{background:var(--text-muted);}
+  .cal-day .cd-absent{font-size:9px;color:var(--danger);font-weight:700;margin-top:2px;}
 
   @media (max-width: 640px){
     .wrap{padding:14px 10px 96px;}
@@ -345,6 +347,9 @@
     <div class="card">
       <h2>欠席連絡</h2>
       <p class="note" style="margin-top:0;">保護者専用フォームから送られた欠席連絡の一覧です。「確認済みにする」を押すと一覧の下の方に移動します。</p>
+      <div class="btn-row" id="absence-bulk-actions" style="display:none;margin-bottom:12px;">
+        <button class="link-danger" id="btn-delete-acknowledged">確認済みをすべて削除</button>
+      </div>
       <div class="table-scroll">
         <table class="mini-table">
           <thead><tr><th>状態</th><th>選手氏名</th><th>欠席日</th><th>理由</th><th>備考</th><th>連絡日時</th><th></th></tr></thead>
@@ -542,6 +547,7 @@ const ABILITY_DEFS = [
 ];
 
 let students = [];
+let absenceReports = [];
 let settings = {
   tuition:8000, enroll:5000,
   sponsors:[{id:'seed1', name:'メインスポンサー', amount:300000, month:4}],
@@ -691,7 +697,9 @@ function attachListeners(){
     renderCalendarViews();
   }, err => console.error(err));
   unsubAbsence = absenceRef.orderBy('absenceDate', 'desc').onSnapshot(snap => {
+    absenceReports = snap.docs.map(d => Object.assign({ id:d.id }, d.data()));
     renderAbsenceList(snap.docs);
+    renderCalendarViews();
   }, err => console.error(err));
   unsubPatterns = patternsRef.onSnapshot(snap => {
     patterns = snap.docs.map(d => Object.assign({ id:d.id }, d.data()));
@@ -717,6 +725,8 @@ let unsubEvents = null;
 function renderAbsenceList(docs){
   const tbody = document.getElementById('absence-tbody');
   const empty = document.getElementById('absence-empty');
+  const bulkActions = document.getElementById('absence-bulk-actions');
+  if (bulkActions) bulkActions.style.display = isAdmin ? 'flex' : 'none';
   if (!tbody) return;
   if (docs.length === 0){ tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
@@ -729,7 +739,9 @@ function renderAbsenceList(docs){
     const r = d.data();
     const submittedStr = fmtTimestamp(r.submittedAt);
     const statusBadge = r.status === 'new' ? '<span class="badge">未確認</span>' : '<span class="badge muted">確認済み</span>';
-    const actionCell = r.status === 'new' ? `<button class="ghost" data-ack="${d.id}">確認済みにする</button>` : '';
+    const ackBtn = r.status === 'new' ? `<button class="ghost" data-ack="${d.id}">確認済みにする</button>` : '';
+    const delBtn = isAdmin ? `<button class="link-danger" data-del-absence="${d.id}">削除</button>` : '';
+    const actionCell = ackBtn + ' ' + delBtn;
     return `<tr>
       <td>${statusBadge}</td>
       <td>${escAttr(r.studentName || '')}</td>
@@ -744,9 +756,28 @@ function renderAbsenceList(docs){
 
 async function handleAbsenceClick(e){
   const ackId = e.target.dataset.ack;
-  if (!ackId) return;
-  try { await absenceRef.doc(ackId).update({ status:'acknowledged' }); }
-  catch(err){ console.error(err); alert('更新に失敗しました: ' + err.message); }
+  const delId = e.target.dataset.delAbsence;
+  if (ackId){
+    try { await absenceRef.doc(ackId).update({ status:'acknowledged' }); }
+    catch(err){ console.error(err); alert('更新に失敗しました: ' + err.message); }
+    return;
+  }
+  if (delId){
+    if (!confirm('この欠席連絡を削除しますか？(元に戻せません)')) return;
+    try { await absenceRef.doc(delId).delete(); }
+    catch(err){ console.error(err); alert('削除に失敗しました: ' + err.message); }
+  }
+}
+
+async function handleDeleteAcknowledged(){
+  const targets = absenceReports.filter(r => r.status === 'acknowledged');
+  if (targets.length === 0){ alert('確認済みの欠席連絡はありません。'); return; }
+  if (!confirm('確認済みの欠席連絡を' + targets.length + '件、すべて削除します。元に戻せません。よろしいですか？')) return;
+  try {
+    const batch = db.batch();
+    targets.forEach(r => batch.delete(absenceRef.doc(r.id)));
+    await batch.commit();
+  } catch(err){ console.error(err); alert('削除に失敗しました: ' + err.message); }
 }
 
 const WEEKDAY_LABELS = ['日','月','火','水','木','金','土'];
@@ -780,11 +811,19 @@ function occurrencesForDate(dateStr){
   return results;
 }
 
+function absenteesForDate(dateStr){
+  return absenceReports.filter(r => r.absenceDate === dateStr);
+}
+
 function calendarRowHTML(o){
   const d = new Date(o.date + 'T00:00:00');
   const dateLabel = (d.getMonth()+1) + '/' + d.getDate() + '(' + WEEKDAY_LABELS[d.getDay()] + ')';
   const cancelledTag = o.cancelled ? ' <span class="badge muted">中止</span>' : '';
   const key = o.date + '|' + (o.patternId||'') + '|' + (o.eventId||'');
+  const absentees = absenteesForDate(o.date);
+  const absenteesHTML = absentees.length
+    ? `<div class="cr-absent">🚫 欠席: ${absentees.map(a => escAttr(a.studentName) + (a.reason ? '('+escAttr(a.reason)+')' : '')).join('、')}</div>`
+    : '';
   return `<div class="calendar-row ${o.cancelled ? 'cancelled' : ''}">
     <div class="cr-date">${dateLabel}</div>
     <div class="cr-time">${escAttr(o.startTime||'')}${o.endTime ? '〜'+escAttr(o.endTime) : ''}</div>
@@ -793,6 +832,7 @@ function calendarRowHTML(o){
       <div class="cr-loc">📍 ${escAttr(locationName(o.locationId))}</div>
       <div class="cr-staff">担当: ${escAttr(o.staffInCharge||'-')} ／ 対象: ${escAttr(o.targetGroup||'-')}</div>
       ${o.note ? '<div class="cr-note">' + escAttr(o.note) + '</div>' : ''}
+      ${absenteesHTML}
     </div>
     <div class="cr-actions"><button class="ghost" data-edit-occ="${key}">編集</button></div>
   </div>`;
@@ -826,8 +866,10 @@ function renderCalGrid(){
     const dateStr = calViewYear + '-' + pad(calViewMonth+1) + '-' + pad(day);
     const occ = occurrencesForDate(dateStr);
     const dots = occ.map(o => `<span class="cd-dot ${o.cancelled ? 'cancelled-dot' : ''}"></span>`).join('');
+    const absentCount = absenteesForDate(dateStr).length;
+    const absentBadge = absentCount ? `<div class="cd-absent">欠${absentCount}</div>` : '';
     const sel = dateStr === calSelectedDate ? ' selected' : '';
-    html += `<div class="cal-day${sel}" data-date="${dateStr}"><div class="cd-num">${day}</div>${dots}</div>`;
+    html += `<div class="cal-day${sel}" data-date="${dateStr}"><div class="cd-num">${day}</div>${dots}${absentBadge}</div>`;
   }
   grid.innerHTML = html;
 }
@@ -1830,6 +1872,7 @@ function initUI(){
 
   document.getElementById('summary-start').addEventListener('change', renderSummary);
   document.getElementById('absence-tbody').addEventListener('click', handleAbsenceClick);
+  document.getElementById('btn-delete-acknowledged').addEventListener('click', handleDeleteAcknowledged);
   document.getElementById('btn-refresh-summary').addEventListener('click', renderSummary);
   document.getElementById('summary-tbody').addEventListener('click', (e) => {
     const td = e.target.closest('td[data-id]');
