@@ -728,9 +728,10 @@ function renderAbsenceList(docs){
   const bulkActions = document.getElementById('absence-bulk-actions');
   if (bulkActions) bulkActions.style.display = isAdmin ? 'flex' : 'none';
   if (!tbody) return;
-  if (docs.length === 0){ tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
+  const visibleDocs = docs.filter(d => !d.data().archived);
+  if (visibleDocs.length === 0){ tbody.innerHTML = ''; if (empty) empty.style.display = 'block'; return; }
   if (empty) empty.style.display = 'none';
-  const sorted = [...docs].sort((a,b) => {
+  const sorted = [...visibleDocs].sort((a,b) => {
     const da = a.data(), db_ = b.data();
     if (da.status !== db_.status) return da.status === 'new' ? -1 : 1;
     return (db_.absenceDate || '').localeCompare(da.absenceDate || '');
@@ -740,7 +741,7 @@ function renderAbsenceList(docs){
     const submittedStr = fmtTimestamp(r.submittedAt);
     const statusBadge = r.status === 'new' ? '<span class="badge">未確認</span>' : '<span class="badge muted">確認済み</span>';
     const ackBtn = r.status === 'new' ? `<button class="ghost" data-ack="${d.id}">確認済みにする</button>` : '';
-    const delBtn = isAdmin ? `<button class="link-danger" data-del-absence="${d.id}">削除</button>` : '';
+    const delBtn = isAdmin ? `<button class="link-danger" data-archive-absence="${d.id}">一覧から削除</button>` : '';
     const actionCell = ackBtn + ' ' + delBtn;
     return `<tr>
       <td>${statusBadge}</td>
@@ -756,26 +757,26 @@ function renderAbsenceList(docs){
 
 async function handleAbsenceClick(e){
   const ackId = e.target.dataset.ack;
-  const delId = e.target.dataset.delAbsence;
+  const archiveId = e.target.dataset.archiveAbsence;
   if (ackId){
     try { await absenceRef.doc(ackId).update({ status:'acknowledged' }); }
     catch(err){ console.error(err); alert('更新に失敗しました: ' + err.message); }
     return;
   }
-  if (delId){
-    if (!confirm('この欠席連絡を削除しますか？(元に戻せません)')) return;
-    try { await absenceRef.doc(delId).delete(); }
+  if (archiveId){
+    if (!confirm('この欠席連絡を一覧から削除します。カレンダー上の欠席記録はそのまま残ります。よろしいですか？')) return;
+    try { await absenceRef.doc(archiveId).update({ archived:true }); }
     catch(err){ console.error(err); alert('削除に失敗しました: ' + err.message); }
   }
 }
 
 async function handleDeleteAcknowledged(){
-  const targets = absenceReports.filter(r => r.status === 'acknowledged');
+  const targets = absenceReports.filter(r => r.status === 'acknowledged' && !r.archived);
   if (targets.length === 0){ alert('確認済みの欠席連絡はありません。'); return; }
-  if (!confirm('確認済みの欠席連絡を' + targets.length + '件、すべて削除します。元に戻せません。よろしいですか？')) return;
+  if (!confirm('確認済みの欠席連絡を' + targets.length + '件、一覧から削除します。カレンダー上の欠席記録はそのまま残ります。よろしいですか？')) return;
   try {
     const batch = db.batch();
-    targets.forEach(r => batch.delete(absenceRef.doc(r.id)));
+    targets.forEach(r => batch.update(absenceRef.doc(r.id), { archived:true }));
     await batch.commit();
   } catch(err){ console.error(err); alert('削除に失敗しました: ' + err.message); }
 }
