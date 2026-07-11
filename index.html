@@ -201,6 +201,7 @@
     <button class="tab-btn" data-tab="growth">成長管理</button>
     <button class="tab-btn" data-tab="summary">成長サマリー</button>
     <button class="tab-btn" data-tab="absence">欠席連絡</button>
+    <button class="tab-btn" data-tab="absenceHistory">欠席履歴</button>
     <button class="tab-btn" data-tab="calendar">カレンダー</button>
     <button class="tab-btn admin-only-tab" data-tab="settings">設定</button>
   </div>
@@ -211,6 +212,7 @@
     <button class="tab-btn" data-tab="growth"><span class="nav-icon"></span>成長</button>
     <button class="tab-btn" data-tab="summary"><span class="nav-icon"></span>サマリー</button>
     <button class="tab-btn" data-tab="absence"><span class="nav-icon"></span>欠席</button>
+    <button class="tab-btn" data-tab="absenceHistory"><span class="nav-icon"></span>履歴</button>
     <button class="tab-btn" data-tab="calendar"><span class="nav-icon"></span>予定</button>
     <button class="tab-btn admin-only-tab" data-tab="settings"><span class="nav-icon"></span>設定</button>
   </div>
@@ -358,6 +360,24 @@
       </div>
       <div id="absence-empty" class="empty" style="display:none;">欠席連絡はまだありません。</div>
     </div>
+  </div>
+
+  <!-- Absence history -->
+  <div class="tab-panel" id="tab-absenceHistory">
+    <div class="card">
+      <h2>欠席履歴(振り返り用)</h2>
+      <p class="note" style="margin-top:0;">「欠席連絡」の一覧からアーカイブ(削除)しても、ここには表示中の年度の記録がすべて残ります。列をクリックすると、その選手・その月の詳細(日付・理由・備考)が下に表示されます。</p>
+      <div class="field" style="max-width:280px;"><label for="ah-filter">選手名で絞り込み</label><input type="text" id="ah-filter" placeholder="例: 山田"></div>
+      <div class="table-scroll">
+        <table class="mini-table" id="ah-table">
+          <thead id="ah-thead"></thead>
+          <tbody id="ah-tbody"></tbody>
+        </table>
+      </div>
+      <div id="ah-empty" class="empty" style="display:none;">この年度の欠席記録はありません。</div>
+      <p class="note">選手名は保護者が欠席連絡フォームに自由入力した文字列を基に集計しています。表記の揺れ(スペースの有無など)によって、同一選手が別集計になる場合があります。</p>
+    </div>
+    <div id="ah-detail"></div>
   </div>
 
   <!-- Calendar -->
@@ -700,6 +720,7 @@ function attachListeners(){
     absenceReports = snap.docs.map(d => Object.assign({ id:d.id }, d.data()));
     renderAbsenceList(snap.docs);
     renderCalendarViews();
+    renderAbsenceHistory();
   }, err => console.error(err));
   unsubPatterns = patternsRef.onSnapshot(snap => {
     patterns = snap.docs.map(d => Object.assign({ id:d.id }, d.data()));
@@ -1074,6 +1095,67 @@ async function handleLocationsClick(e){
   renderPatternsTable();
 }
 
+function absenceHistoryData(fy){
+  const months = fiscalMonths(fy);
+  const filterText = (document.getElementById('ah-filter') && document.getElementById('ah-filter').value.trim().toLowerCase()) || '';
+  const byStudent = {};
+  absenceReports.forEach(r => {
+    const name = (r.studentName || '').trim();
+    if (!name) return;
+    if (filterText && name.toLowerCase().indexOf(filterText) === -1) return;
+    const ym = (r.absenceDate || '').slice(0,7);
+    const inRange = months.some(m => m.key === ym);
+    if (!inRange) return;
+    if (!byStudent[name]) byStudent[name] = {};
+    if (!byStudent[name][ym]) byStudent[name][ym] = [];
+    byStudent[name][ym].push(r);
+  });
+  return { months, byStudent };
+}
+
+function renderAbsenceHistory(){
+  const thead = document.getElementById('ah-thead');
+  const tbody = document.getElementById('ah-tbody');
+  const empty = document.getElementById('ah-empty');
+  if (!thead || !tbody) return;
+  const { months, byStudent } = absenceHistoryData(currentFY);
+  thead.innerHTML = '<tr><th>選手名</th>' + months.map(m => `<th>${m.label}</th>`).join('') + '<th>合計</th></tr>';
+  const names = Object.keys(byStudent).sort();
+  if (names.length === 0){
+    tbody.innerHTML = '';
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  tbody.innerHTML = names.map(name => {
+    let total = 0;
+    const cells = months.map(m => {
+      const list = byStudent[name][m.key] || [];
+      total += list.length;
+      const cellClass = list.length > 0 ? 'style="cursor:pointer;background:var(--accent-bg);color:var(--accent-dark);font-weight:600;"' : '';
+      return `<td ${cellClass} data-ah-name="${escAttr(name)}" data-ah-ym="${m.key}">${list.length > 0 ? list.length : '-'}</td>`;
+    }).join('');
+    return `<tr><td>${escAttr(name)}</td>${cells}<td style="font-weight:700;">${total}</td></tr>`;
+  }).join('');
+}
+
+function renderAbsenceHistoryDetail(name, ym){
+  const container = document.getElementById('ah-detail');
+  if (!container) return;
+  const list = absenceReports.filter(r => (r.studentName||'').trim() === name && (r.absenceDate||'').slice(0,7) === ym);
+  if (list.length === 0){ container.innerHTML = ''; return; }
+  const monthLabel = Number(ym.slice(5,7)) + '月';
+  const rows = list.sort((a,b) => (a.absenceDate||'').localeCompare(b.absenceDate||'')).map(r => `
+    <tr><td>${escAttr(r.absenceDate||'')}</td><td>${escAttr(r.reason||'')}</td><td>${escAttr(r.note||'')}</td></tr>`).join('');
+  container.innerHTML = `<div class="card">
+    <h2>${escAttr(name)}さん ${monthLabel}の欠席詳細</h2>
+    <div class="table-scroll"><table class="mini-table">
+      <thead><tr><th>日付</th><th>理由</th><th>備考</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+  </div>`;
+}
+
 function activeCountAtKey(key){ return students.filter(s => s.months[key] === 'active').length; }
 
 function computeMonthly(fy){
@@ -1225,6 +1307,7 @@ function renderAll(){
   populateGrowthStudentSelect();
   if (document.getElementById('growth-month').value) loadGrowthForm();
   if (document.getElementById('summary-start').value) renderSummary();
+  renderAbsenceHistory();
 }
 
 async function handleGridClick(e){
@@ -1775,6 +1858,7 @@ function switchTab(name){
   else if (name === 'growth') { populateGrowthStudentSelect(); loadGrowthForm(); }
   else if (name === 'dashboard') refreshDashboard();
   else if (name === 'grid') renderGrid();
+  else if (name === 'absenceHistory') renderAbsenceHistory();
 }
 
 function initUI(){
@@ -1874,6 +1958,12 @@ function initUI(){
   document.getElementById('summary-start').addEventListener('change', renderSummary);
   document.getElementById('absence-tbody').addEventListener('click', handleAbsenceClick);
   document.getElementById('btn-delete-acknowledged').addEventListener('click', handleDeleteAcknowledged);
+  document.getElementById('ah-filter').addEventListener('input', renderAbsenceHistory);
+  document.getElementById('ah-tbody').addEventListener('click', (e) => {
+    const name = e.target.dataset.ahName;
+    const ym = e.target.dataset.ahYm;
+    if (name && ym) renderAbsenceHistoryDetail(name, ym);
+  });
   document.getElementById('btn-refresh-summary').addEventListener('click', renderSummary);
   document.getElementById('summary-tbody').addEventListener('click', (e) => {
     const td = e.target.closest('td[data-id]');
