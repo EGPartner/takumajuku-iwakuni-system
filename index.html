@@ -467,7 +467,10 @@
     </div>
 
     <div class="card">
-      <h2>定期パターン(毎週の練習など)</h2>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">定期パターン(毎週の練習など)</h2>
+        <span><button class="ghost" id="btn-edit-patterns">編集</button><button class="primary" id="btn-save-patterns" style="display:none;">登録</button></span>
+      </div>
       <p class="note" style="margin-top:0;">「開始日」「終了日」は空欄のままでOKです(無期限で繰り返されます)。学年が変わるタイミングなどで区切りたい場合にご利用ください。</p>
       <div class="table-scroll">
         <table class="mini-table">
@@ -475,7 +478,7 @@
           <tbody id="patterns-tbody"></tbody>
         </table>
       </div>
-      <button class="ghost" id="btn-add-pattern" style="margin-top:10px;">+ 定期パターンを追加</button>
+      <button class="ghost" id="btn-add-pattern" style="margin-top:10px;display:none;">+ 定期パターンを追加</button>
     </div>
   </div>
 
@@ -491,34 +494,50 @@
       <p class="note" style="margin-top:0;">スタッフのログインアカウントと管理者権限は、Firebaseコンソール(Authentication / Firestoreのstaffコレクション)で管理します。アプリ内からの追加・変更機能は現時点では未実装です。</p>
     </div>
     <div class="card">
-      <h2>単価設定</h2>
-      <div class="row">
-        <div class="field"><label for="cfg-tuition">月謝単価(円/人)</label><input type="number" id="cfg-tuition" min="0" step="500"></div>
-        <div class="field"><label for="cfg-enroll">入会金(円)</label><input type="number" id="cfg-enroll" min="0" step="500"></div>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">単価設定</h2>
+        <span><button class="ghost" id="btn-edit-pricing">編集</button><button class="primary" id="btn-save-pricing" style="display:none;">登録</button></span>
       </div>
-      <p class="note">階段図で「体験」にチェックが入っている塾生は、初めて★が付いた月の入会金が自動的に免除されます。すべて自動保存されます。</p>
+      <div class="row">
+        <div class="field"><label for="cfg-tuition">月謝単価(円/人)</label><input type="number" id="cfg-tuition" min="0" step="500" disabled></div>
+        <div class="field"><label for="cfg-enroll">入会金(円)</label><input type="number" id="cfg-enroll" min="0" step="500" disabled></div>
+      </div>
+      <p class="note">階段図で「体験」にチェックが入っている塾生は、初めて★が付いた月の入会金が自動的に免除されます。</p>
     </div>
     <div class="card">
-      <h2>スポンサー収入(毎年・複数登録可)</h2>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">スポンサー収入(毎年・複数登録可)</h2>
+        <span><button class="ghost" id="btn-edit-sponsors">編集</button><button class="primary" id="btn-save-sponsors" style="display:none;">登録</button></span>
+      </div>
       <div class="table-scroll"><table class="mini-table"><thead><tr><th>名称</th><th>年間金額(円)</th><th>徴収月</th><th></th></tr></thead><tbody id="sponsors-tbody"></tbody></table></div>
-      <button class="ghost" id="btn-add-sponsor" style="margin-top:10px;">+ スポンサーを追加</button>
+      <button class="ghost" id="btn-add-sponsor" style="margin-top:10px;display:none;">+ スポンサーを追加</button>
     </div>
     <div class="card">
-      <h2>支出項目(月額固定・複数登録可)</h2>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">支出項目(月額固定・複数登録可)</h2>
+        <span><button class="ghost" id="btn-edit-expenses">編集</button><button class="primary" id="btn-save-expenses" style="display:none;">登録</button></span>
+      </div>
       <div class="table-scroll"><table class="mini-table"><thead><tr><th>項目名</th><th>金額(円/月)</th><th></th></tr></thead><tbody id="expenses-tbody"></tbody></table></div>
-      <button class="ghost" id="btn-add-expense" style="margin-top:10px;">+ 支出項目を追加</button>
+      <button class="ghost" id="btn-add-expense" style="margin-top:10px;display:none;">+ 支出項目を追加</button>
     </div>
     <div class="card">
-      <h2>臨時収入(単発・複数登録可)</h2>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">臨時収入(単発・複数登録可)</h2>
+        <span><button class="ghost" id="btn-edit-extra">編集</button><button class="primary" id="btn-save-extra" style="display:none;">登録</button></span>
+      </div>
       <div class="table-scroll"><table class="mini-table"><thead><tr><th>内容</th><th>金額(円)</th><th>発生年月</th><th></th></tr></thead><tbody id="extra-tbody"></tbody></table></div>
-      <button class="ghost" id="btn-add-extra" style="margin-top:10px;">+ 臨時収入を追加</button>
+      <button class="ghost" id="btn-add-extra" style="margin-top:10px;display:none;">+ 臨時収入を追加</button>
     </div>
     <div class="card">
-      <h2>練習場所(カレンダーで使用)</h2>
+      <div class="btn-row" style="justify-content:space-between;margin-bottom:4px;">
+        <h2 style="margin:0;">練習場所(カレンダーで使用)</h2>
+        <span><button class="ghost" id="btn-edit-locations">編集</button><button class="primary" id="btn-save-locations" style="display:none;">登録</button></span>
+      </div>
       <div class="table-scroll"><table class="mini-table"><thead><tr><th>名称</th><th>住所</th><th>メモ</th><th></th></tr></thead><tbody id="locations-tbody"></tbody></table></div>
-      <button class="ghost" id="btn-add-location" style="margin-top:10px;">+ 場所を追加</button>
+      <button class="ghost" id="btn-add-location" style="margin-top:10px;display:none;">+ 場所を追加</button>
     </div>
     <div class="card">
+
       <h2>データのバックアップ・復元(重要)</h2>
       <p class="note" style="margin-top:0;">保存データはこのブラウザ内に保持されますが、このファイルを別名で再ダウンロードしたり、別のブラウザ・別の端末で開いたりすると引き継がれません。作業のきりの良いタイミングで、バックアップ(JSON)をダウンロードして保管してください。</p>
       <div class="btn-row">
@@ -584,6 +603,7 @@ let settings = {
   extraIncomes:[]
 };
 let isAdmin = false;
+let editState = { pricing:false, sponsors:false, expenses:false, extra:false, locations:false, patterns:false };
 let currentFY;
 let patterns = [];
 let scheduleEvents = [];
@@ -1062,20 +1082,21 @@ function renderPatternsTable(){
   if (!tbody) return;
   if (patterns.length === 0){ tbody.innerHTML = '<tr><td colspan="10" class="empty">定期パターンが登録されていません</td></tr>'; return; }
   const sorted = [...patterns].sort((a,b) => Number(a.weekday) - Number(b.weekday));
+  const dis = editState.patterns ? '' : 'disabled';
   const locOpts = (selected) => '<option value="">(未選択)</option>' + (settings.locations||[]).map(l => `<option value="${l.id}" ${l.id===selected?'selected':''}>${escAttr(l.name)}</option>`).join('');
   const wdOpts = (selected) => WEEKDAY_NAMES.map((w,i) => `<option value="${i}" ${Number(selected)===i?'selected':''}>${w}</option>`).join('');
   tbody.innerHTML = sorted.map(p => `
     <tr data-id="${p.id}">
-      <td><select class="pt-weekday" data-id="${p.id}">${wdOpts(p.weekday)}</select></td>
-      <td><input type="time" class="pt-start" data-id="${p.id}" value="${p.startTime||''}" style="width:80px;display:inline-block;"> 〜 <input type="time" class="pt-end" data-id="${p.id}" value="${p.endTime||''}" style="width:80px;display:inline-block;"></td>
-      <td><select class="pt-location" data-id="${p.id}">${locOpts(p.locationId)}</select></td>
-      <td><input type="text" class="pt-staff" data-id="${p.id}" value="${escAttr(p.staffInCharge||'')}" style="width:90px;"></td>
-      <td><input type="text" class="pt-target" data-id="${p.id}" value="${escAttr(p.targetGroup||'')}" style="width:90px;"></td>
-      <td><select class="pt-type" data-id="${p.id}"><option ${p.type==='通常練習'?'selected':''}>通常練習</option><option ${p.type==='試合'?'selected':''}>試合</option><option ${p.type==='イベント'?'selected':''}>イベント</option></select></td>
-      <td><input type="text" class="pt-note" data-id="${p.id}" value="${escAttr(p.note||'')}" style="width:100px;"></td>
-      <td><input type="date" class="pt-startdate" data-id="${p.id}" value="${p.startDate||''}" style="width:130px;"></td>
-      <td><input type="date" class="pt-enddate" data-id="${p.id}" value="${p.endDate||''}" style="width:130px;"></td>
-      <td><button class="link-danger" data-del-pattern="${p.id}">削除</button></td>
+      <td><select class="pt-weekday" data-id="${p.id}" ${dis}>${wdOpts(p.weekday)}</select></td>
+      <td><input type="time" class="pt-start" data-id="${p.id}" value="${p.startTime||''}" style="width:80px;display:inline-block;" ${dis}> 〜 <input type="time" class="pt-end" data-id="${p.id}" value="${p.endTime||''}" style="width:80px;display:inline-block;" ${dis}></td>
+      <td><select class="pt-location" data-id="${p.id}" ${dis}>${locOpts(p.locationId)}</select></td>
+      <td><input type="text" class="pt-staff" data-id="${p.id}" value="${escAttr(p.staffInCharge||'')}" style="width:90px;" ${dis}></td>
+      <td><input type="text" class="pt-target" data-id="${p.id}" value="${escAttr(p.targetGroup||'')}" style="width:90px;" ${dis}></td>
+      <td><select class="pt-type" data-id="${p.id}" ${dis}><option ${p.type==='通常練習'?'selected':''}>通常練習</option><option ${p.type==='試合'?'selected':''}>試合</option><option ${p.type==='イベント'?'selected':''}>イベント</option></select></td>
+      <td><input type="text" class="pt-note" data-id="${p.id}" value="${escAttr(p.note||'')}" style="width:100px;" ${dis}></td>
+      <td><input type="date" class="pt-startdate" data-id="${p.id}" value="${p.startDate||''}" style="width:130px;" ${dis}></td>
+      <td><input type="date" class="pt-enddate" data-id="${p.id}" value="${p.endDate||''}" style="width:130px;" ${dis}></td>
+      <td><button class="link-danger" data-del-pattern="${p.id}" ${dis}>削除</button></td>
     </tr>`).join('');
 }
 
@@ -1102,12 +1123,13 @@ function renderLocationsTable(){
   const tbody = document.getElementById('locations-tbody');
   if (!tbody) return;
   const locs = settings.locations || [];
+  const dis = editState.locations ? '' : 'disabled';
   tbody.innerHTML = locs.map(l => `
     <tr data-id="${l.id}">
-      <td><input type="text" class="loc-name" data-id="${l.id}" value="${escAttr(l.name)}"></td>
-      <td><input type="text" class="loc-address" data-id="${l.id}" value="${escAttr(l.address||'')}"></td>
-      <td><input type="text" class="loc-note" data-id="${l.id}" value="${escAttr(l.note||'')}"></td>
-      <td><button class="link-danger" data-del-loc="${l.id}">削除</button></td>
+      <td><input type="text" class="loc-name" data-id="${l.id}" value="${escAttr(l.name)}" ${dis}></td>
+      <td><input type="text" class="loc-address" data-id="${l.id}" value="${escAttr(l.address||'')}" ${dis}></td>
+      <td><input type="text" class="loc-note" data-id="${l.id}" value="${escAttr(l.note||'')}" ${dis}></td>
+      <td><button class="link-danger" data-del-loc="${l.id}" ${dis}>削除</button></td>
     </tr>`).join('') || '<tr><td colspan="4" class="empty">場所が登録されていません</td></tr>';
 }
 async function handleLocationsChange(e){
@@ -1457,24 +1479,27 @@ function updateAdminUI(){
 }
 
 function renderSponsors(){
+  const dis = editState.sponsors ? '' : 'disabled';
   document.getElementById('sponsors-tbody').innerHTML = settings.sponsors.map(sp => `
-    <tr data-id="${sp.id}"><td><input type="text" class="sp-name" data-id="${sp.id}" value="${escAttr(sp.name)}"></td>
-    <td><input type="number" class="sp-amount" data-id="${sp.id}" value="${sp.amount}" min="0" step="10000"></td>
-    <td><select class="sp-month" data-id="${sp.id}">${monthOptions(sp.month)}</select></td>
-    <td><button class="link-danger" data-del="${sp.id}">削除</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">スポンサーが登録されていません</td></tr>';
+    <tr data-id="${sp.id}"><td><input type="text" class="sp-name" data-id="${sp.id}" value="${escAttr(sp.name)}" ${dis}></td>
+    <td><input type="number" class="sp-amount" data-id="${sp.id}" value="${sp.amount}" min="0" step="10000" ${dis}></td>
+    <td><select class="sp-month" data-id="${sp.id}" ${dis}>${monthOptions(sp.month)}</select></td>
+    <td><button class="link-danger" data-del="${sp.id}" ${dis}>削除</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">スポンサーが登録されていません</td></tr>';
 }
 function renderExpenses(){
+  const dis = editState.expenses ? '' : 'disabled';
   document.getElementById('expenses-tbody').innerHTML = settings.expenses.map(ex => `
-    <tr data-id="${ex.id}"><td><input type="text" class="ex-name" data-id="${ex.id}" value="${escAttr(ex.name)}"></td>
-    <td><input type="number" class="ex-amount" data-id="${ex.id}" value="${ex.amount}" min="0" step="1000"></td>
-    <td><button class="link-danger" data-del="${ex.id}">削除</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">支出項目が登録されていません</td></tr>';
+    <tr data-id="${ex.id}"><td><input type="text" class="ex-name" data-id="${ex.id}" value="${escAttr(ex.name)}" ${dis}></td>
+    <td><input type="number" class="ex-amount" data-id="${ex.id}" value="${ex.amount}" min="0" step="1000" ${dis}></td>
+    <td><button class="link-danger" data-del="${ex.id}" ${dis}>削除</button></td></tr>`).join('') || '<tr><td colspan="3" class="empty">支出項目が登録されていません</td></tr>';
 }
 function renderExtra(){
+  const dis = editState.extra ? '' : 'disabled';
   document.getElementById('extra-tbody').innerHTML = settings.extraIncomes.map(ei => `
-    <tr data-id="${ei.id}"><td><input type="text" class="ei-name" data-id="${ei.id}" value="${escAttr(ei.name)}"></td>
-    <td><input type="number" class="ei-amount" data-id="${ei.id}" value="${ei.amount}" min="0" step="1000"></td>
-    <td><input type="month" class="ei-ym" data-id="${ei.id}" value="${ei.ym}"></td>
-    <td><button class="link-danger" data-del="${ei.id}">削除</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">臨時収入が登録されていません</td></tr>';
+    <tr data-id="${ei.id}"><td><input type="text" class="ei-name" data-id="${ei.id}" value="${escAttr(ei.name)}" ${dis}></td>
+    <td><input type="number" class="ei-amount" data-id="${ei.id}" value="${ei.amount}" min="0" step="1000" ${dis}></td>
+    <td><input type="month" class="ei-ym" data-id="${ei.id}" value="${ei.ym}" ${dis}></td>
+    <td><button class="link-danger" data-del="${ei.id}" ${dis}>削除</button></td></tr>`).join('') || '<tr><td colspan="4" class="empty">臨時収入が登録されていません</td></tr>';
 }
 function monthOptions(selected){ let s=''; for (let m=1;m<=12;m++) s+=`<option value="${m}" ${Number(selected)===m?'selected':''}>${m}月</option>`; return s; }
 
@@ -1483,6 +1508,37 @@ async function handleTuitionEnrollChange(){
   settings.enroll = Number(document.getElementById('cfg-enroll').value) || 0;
   await saveSettings(); refreshDashboard(); renderGridFooter(fiscalMonths(currentFY));
 }
+
+function togglePricingEdit(editing){
+  editState.pricing = editing;
+  document.getElementById('cfg-tuition').disabled = !editing;
+  document.getElementById('cfg-enroll').disabled = !editing;
+  document.getElementById('btn-edit-pricing').style.display = editing ? 'none' : 'inline-block';
+  document.getElementById('btn-save-pricing').style.display = editing ? 'inline-block' : 'none';
+}
+
+const EDIT_SECTIONS = {
+  sponsors: { render: () => renderSponsors(), addBtn: 'btn-add-sponsor' },
+  expenses: { render: () => renderExpenses(), addBtn: 'btn-add-expense' },
+  extra: { render: () => renderExtra(), addBtn: 'btn-add-extra' },
+  locations: { render: () => renderLocationsTable(), addBtn: 'btn-add-location' },
+  patterns: { render: () => renderPatternsTable(), addBtn: 'btn-add-pattern' }
+};
+
+function toggleEditMode(key, editing){
+  editState[key] = editing;
+  const cfg = EDIT_SECTIONS[key];
+  if (cfg){
+    cfg.render();
+    const addBtn = document.getElementById(cfg.addBtn);
+    if (addBtn) addBtn.style.display = editing ? 'inline-block' : 'none';
+  }
+  const editBtn = document.getElementById('btn-edit-' + key);
+  const saveBtn = document.getElementById('btn-save-' + key);
+  if (editBtn) editBtn.style.display = editing ? 'none' : 'inline-block';
+  if (saveBtn) saveBtn.style.display = editing ? 'inline-block' : 'none';
+}
+
 async function handleSponsorsChange(e){
   const id = e.target.dataset.id; if (!id) return;
   const sp = settings.sponsors.find(x => x.id === id); if (!sp) return;
@@ -1920,20 +1976,30 @@ function initUI(){
 
   document.getElementById('cfg-tuition').addEventListener('change', handleTuitionEnrollChange);
   document.getElementById('cfg-enroll').addEventListener('change', handleTuitionEnrollChange);
+  document.getElementById('btn-edit-pricing').addEventListener('click', () => togglePricingEdit(true));
+  document.getElementById('btn-save-pricing').addEventListener('click', async () => { await handleTuitionEnrollChange(); togglePricingEdit(false); });
   document.getElementById('sponsors-tbody').addEventListener('input', handleSponsorsChange);
   document.getElementById('sponsors-tbody').addEventListener('change', handleSponsorsChange);
   document.getElementById('sponsors-tbody').addEventListener('click', handleSponsorsClick);
   document.getElementById('btn-add-sponsor').addEventListener('click', async () => { settings.sponsors.push({ id:uid(), name:'新しいスポンサー', amount:0, month:4 }); await saveSettings(); });
+  document.getElementById('btn-edit-sponsors').addEventListener('click', () => toggleEditMode('sponsors', true));
+  document.getElementById('btn-save-sponsors').addEventListener('click', () => toggleEditMode('sponsors', false));
   document.getElementById('expenses-tbody').addEventListener('input', handleExpensesChange);
   document.getElementById('expenses-tbody').addEventListener('click', handleExpensesClick);
   document.getElementById('btn-add-expense').addEventListener('click', async () => { settings.expenses.push({ id:uid(), name:'新しい支出項目', amount:0 }); await saveSettings(); });
+  document.getElementById('btn-edit-expenses').addEventListener('click', () => toggleEditMode('expenses', true));
+  document.getElementById('btn-save-expenses').addEventListener('click', () => toggleEditMode('expenses', false));
   document.getElementById('extra-tbody').addEventListener('input', handleExtraChange);
   document.getElementById('extra-tbody').addEventListener('change', handleExtraChange);
   document.getElementById('extra-tbody').addEventListener('click', handleExtraClick);
   document.getElementById('btn-add-extra').addEventListener('click', async () => { settings.extraIncomes.push({ id:uid(), name:'新しい臨時収入', amount:0, ym:currentMonthStr() }); await saveSettings(); });
+  document.getElementById('btn-edit-extra').addEventListener('click', () => toggleEditMode('extra', true));
+  document.getElementById('btn-save-extra').addEventListener('click', () => toggleEditMode('extra', false));
   document.getElementById('locations-tbody').addEventListener('input', handleLocationsChange);
   document.getElementById('locations-tbody').addEventListener('click', handleLocationsClick);
   document.getElementById('btn-add-location').addEventListener('click', async () => { settings.locations = (settings.locations||[]).concat([{ id:uid(), name:'新しい場所', address:'', note:'' }]); await saveSettings(); renderLocationsTable(); populateLocationSelects(); renderPatternsTable(); });
+  document.getElementById('btn-edit-locations').addEventListener('click', () => toggleEditMode('locations', true));
+  document.getElementById('btn-save-locations').addEventListener('click', () => toggleEditMode('locations', false));
 
   const today0 = new Date();
   calViewYear = today0.getFullYear();
@@ -1981,6 +2047,8 @@ function initUI(){
   document.getElementById('btn-add-pattern').addEventListener('click', async () => {
     await patternsRef.add({ weekday:2, startTime:'17:00', endTime:'19:00', locationId:null, staffInCharge:'', targetGroup:'全学年', type:'通常練習', note:'' });
   });
+  document.getElementById('btn-edit-patterns').addEventListener('click', () => toggleEditMode('patterns', true));
+  document.getElementById('btn-save-patterns').addEventListener('click', () => toggleEditMode('patterns', false));
   document.getElementById('patterns-tbody').addEventListener('change', handlePatternsChange);
   document.getElementById('patterns-tbody').addEventListener('click', handlePatternsClick);
   document.getElementById('btn-download-csv').addEventListener('click', downloadCSV);
