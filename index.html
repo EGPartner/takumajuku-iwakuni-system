@@ -137,12 +137,13 @@
 
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
   .cal-grid .cal-head{font-size:11px;color:var(--text-secondary);text-align:center;padding:4px 0;font-weight:600;}
-  .cal-day{border:1px solid var(--border);border-radius:8px;min-height:56px;padding:4px;font-size:11px;cursor:pointer;background:var(--surface);}
+  #calendar-list{max-height:520px;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-right:4px;}
+  .cal-day{border:1px solid var(--border);border-radius:8px;min-height:76px;padding:4px;font-size:11px;cursor:pointer;background:var(--surface);}
   .cal-day.empty-cell{border:none;background:none;cursor:default;}
   .cal-day.selected{border-color:var(--accent);background:var(--accent-bg);}
   .cal-day .cd-num{font-weight:700;margin-bottom:3px;font-family:'Outfit',sans-serif;}
-  .cal-day .cd-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block;margin-right:2px;}
-  .cal-day .cd-dot.cancelled-dot{background:var(--text-muted);}
+  .cal-day .cd-tag{font-size:9px;font-weight:700;line-height:1.5;padding:1px 3px;border-radius:4px;background:var(--accent);color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .cal-day .cd-tag.cd-tag-cancelled{background:var(--surface-2);color:var(--text-muted);text-decoration:line-through;}
   .cal-day .cd-absent{font-size:9px;color:var(--danger);font-weight:700;margin-top:2px;}
 
   @media (max-width: 640px){
@@ -397,7 +398,7 @@
       </div>
 
       <div id="calendar-list-view">
-        <p class="note" style="margin-top:0;">今日から30日間の予定です。「編集」で、その日だけ場所・担当・中止などを変更できます。</p>
+        <p class="note" style="margin-top:0;">今日から30日間の予定です(スクロールしてすべて確認できます)。「編集」で、その日だけ場所・担当・中止などを変更できます。</p>
         <div id="calendar-list"></div>
       </div>
 
@@ -467,9 +468,10 @@
 
     <div class="card">
       <h2>定期パターン(毎週の練習など)</h2>
+      <p class="note" style="margin-top:0;">「開始日」「終了日」は空欄のままでOKです(無期限で繰り返されます)。学年が変わるタイミングなどで区切りたい場合にご利用ください。</p>
       <div class="table-scroll">
         <table class="mini-table">
-          <thead><tr><th>曜日</th><th>時間</th><th>場所</th><th>担当</th><th>対象</th><th>種別</th><th>備考</th><th></th></tr></thead>
+          <thead><tr><th>曜日</th><th>時間</th><th>場所</th><th>担当</th><th>対象</th><th>種別</th><th>備考</th><th>開始日</th><th>終了日</th><th></th></tr></thead>
           <tbody id="patterns-tbody"></tbody>
         </table>
       </div>
@@ -819,7 +821,10 @@ function locationName(id){ const l = (settings.locations||[]).find(x => x.id ===
 function occurrencesForDate(dateStr){
   const wd = weekdayOf(dateStr);
   const results = [];
-  patterns.filter(p => Number(p.weekday) === wd).forEach(p => {
+  patterns.filter(p => Number(p.weekday) === wd
+    && (!p.startDate || dateStr >= p.startDate)
+    && (!p.endDate || dateStr <= p.endDate)
+  ).forEach(p => {
     const override = scheduleEvents.find(e => e.date === dateStr && e.patternId === p.id);
     const merged = Object.assign({}, p, override || {});
     results.push({
@@ -914,11 +919,14 @@ function renderCalGrid(){
   for (let day = 1; day <= daysInMonth; day++){
     const dateStr = calViewYear + '-' + pad(calViewMonth+1) + '-' + pad(day);
     const occ = occurrencesForDate(dateStr);
-    const dots = occ.map(o => `<span class="cd-dot ${o.cancelled ? 'cancelled-dot' : ''}"></span>`).join('');
+    const tags = occ.map(o => {
+      const abbr = o.type === '試合' ? '試合' : (o.type === 'イベント' ? '行事' : '練習');
+      return `<div class="cd-tag ${o.cancelled ? 'cd-tag-cancelled' : ''}">${o.cancelled ? '中止' : abbr}</div>`;
+    }).join('');
     const absentCount = absenteesForDate(dateStr).length;
     const absentBadge = absentCount ? `<div class="cd-absent">欠${absentCount}</div>` : '';
     const sel = dateStr === calSelectedDate ? ' selected' : '';
-    html += `<div class="cal-day${sel}" data-date="${dateStr}"><div class="cd-num">${day}</div>${dots}${absentBadge}</div>`;
+    html += `<div class="cal-day${sel}" data-date="${dateStr}"><div class="cd-num">${day}</div>${tags}${absentBadge}</div>`;
   }
   grid.innerHTML = html;
 }
@@ -1052,7 +1060,7 @@ async function handleAddStandaloneOccurrence(){
 function renderPatternsTable(){
   const tbody = document.getElementById('patterns-tbody');
   if (!tbody) return;
-  if (patterns.length === 0){ tbody.innerHTML = '<tr><td colspan="8" class="empty">定期パターンが登録されていません</td></tr>'; return; }
+  if (patterns.length === 0){ tbody.innerHTML = '<tr><td colspan="10" class="empty">定期パターンが登録されていません</td></tr>'; return; }
   const sorted = [...patterns].sort((a,b) => Number(a.weekday) - Number(b.weekday));
   const locOpts = (selected) => '<option value="">(未選択)</option>' + (settings.locations||[]).map(l => `<option value="${l.id}" ${l.id===selected?'selected':''}>${escAttr(l.name)}</option>`).join('');
   const wdOpts = (selected) => WEEKDAY_NAMES.map((w,i) => `<option value="${i}" ${Number(selected)===i?'selected':''}>${w}</option>`).join('');
@@ -1065,6 +1073,8 @@ function renderPatternsTable(){
       <td><input type="text" class="pt-target" data-id="${p.id}" value="${escAttr(p.targetGroup||'')}" style="width:90px;"></td>
       <td><select class="pt-type" data-id="${p.id}"><option ${p.type==='通常練習'?'selected':''}>通常練習</option><option ${p.type==='試合'?'selected':''}>試合</option><option ${p.type==='イベント'?'selected':''}>イベント</option></select></td>
       <td><input type="text" class="pt-note" data-id="${p.id}" value="${escAttr(p.note||'')}" style="width:100px;"></td>
+      <td><input type="date" class="pt-startdate" data-id="${p.id}" value="${p.startDate||''}" style="width:130px;"></td>
+      <td><input type="date" class="pt-enddate" data-id="${p.id}" value="${p.endDate||''}" style="width:130px;"></td>
       <td><button class="link-danger" data-del-pattern="${p.id}">削除</button></td>
     </tr>`).join('');
 }
@@ -1072,7 +1082,7 @@ function renderPatternsTable(){
 async function handlePatternsChange(e){
   const id = e.target.dataset.id;
   if (!id) return;
-  const field = { 'pt-weekday':'weekday','pt-start':'startTime','pt-end':'endTime','pt-location':'locationId','pt-staff':'staffInCharge','pt-target':'targetGroup','pt-type':'type','pt-note':'note' };
+  const field = { 'pt-weekday':'weekday','pt-start':'startTime','pt-end':'endTime','pt-location':'locationId','pt-staff':'staffInCharge','pt-target':'targetGroup','pt-type':'type','pt-note':'note','pt-startdate':'startDate','pt-enddate':'endDate' };
   const cls = [...e.target.classList].find(c => field[c]);
   if (!cls) return;
   const key = field[cls];
