@@ -3,6 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0A8A93">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="タクマ塾岩国校">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
 <title>タクマ塾岩国校 収支・塾生管理システム</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -126,7 +133,7 @@
   .calendar-row .cr-loc, .calendar-row .cr-staff{color:var(--text-secondary);margin-bottom:2px;}
   .calendar-row .cr-note{color:var(--text-muted);font-size:12px;}
   .calendar-row .cr-absent{color:var(--danger);font-size:12px;margin-top:4px;font-weight:600;}
-  .calendar-row .cr-actions{flex:0 0 auto;}
+  .calendar-row .cr-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:6px;align-items:stretch;}
 
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
   .cal-grid .cal-head{font-size:11px;color:var(--text-secondary);text-align:center;padding:4px 0;font-weight:600;}
@@ -856,8 +863,28 @@ function calendarRowHTML(o){
       ${o.note ? '<div class="cr-note">' + escAttr(o.note) + '</div>' : ''}
       ${absenteesHTML}
     </div>
-    <div class="cr-actions"><button class="ghost" data-edit-occ="${key}">編集</button></div>
+    <div class="cr-actions">
+      <button class="ghost" data-edit-occ="${key}">編集</button>
+      <button class="link-danger" data-delete-occ="${key}">削除</button>
+    </div>
   </div>`;
+}
+
+async function handleDeleteOccurrenceFromList(key){
+  const [dateStr, patternId, eventId] = key.split('|');
+  if (patternId){
+    if (!confirm('この日の予定を中止にしますか？(定期パターン自体は残ります)')) return;
+    const payload = { date:dateStr, patternId, cancelled:true };
+    try {
+      if (eventId){ await eventsRef.doc(eventId).set(payload, { merge:true }); }
+      else { await eventsRef.add(payload); }
+    } catch(err){ console.error(err); alert('失敗しました: ' + err.message); }
+  } else {
+    if (!eventId) return;
+    if (!confirm('この単発予定を削除しますか？(元に戻せません)')) return;
+    try { await eventsRef.doc(eventId).delete(); }
+    catch(err){ console.error(err); alert('削除に失敗しました: ' + err.message); }
+  }
 }
 
 function renderCalendarList(){
@@ -1926,12 +1953,16 @@ function initUI(){
     renderCalDayDetail(calSelectedDate);
   });
   document.getElementById('calendar-list').addEventListener('click', (e) => {
-    const key = e.target.dataset.editOcc;
-    if (key) openOccurrenceEditor(key);
+    const editKey = e.target.dataset.editOcc;
+    const delKey = e.target.dataset.deleteOcc;
+    if (editKey) openOccurrenceEditor(editKey);
+    else if (delKey) handleDeleteOccurrenceFromList(delKey);
   });
   document.getElementById('cal-day-detail').addEventListener('click', (e) => {
-    const key = e.target.dataset.editOcc;
-    if (key) openOccurrenceEditor(key);
+    const editKey = e.target.dataset.editOcc;
+    const delKey = e.target.dataset.deleteOcc;
+    if (editKey) openOccurrenceEditor(editKey);
+    else if (delKey) handleDeleteOccurrenceFromList(delKey);
   });
   document.getElementById('btn-save-occ').addEventListener('click', handleSaveOccurrence);
   document.getElementById('btn-reset-occ').addEventListener('click', handleResetOccurrence);
@@ -2029,6 +2060,12 @@ auth.onAuthStateChanged(async (user) => {
     detachListeners();
   }
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(err => console.error('Service Worker登録失敗:', err));
+  });
+}
 </script>
 </body>
 </html>
