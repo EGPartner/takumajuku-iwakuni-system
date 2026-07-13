@@ -398,7 +398,7 @@
       </div>
 
       <div id="calendar-list-view">
-        <p class="note" style="margin-top:0;">今日から30日間の予定です(スクロールしてすべて確認できます)。「編集」で、その日だけ場所・担当・中止などを変更できます。</p>
+        <p class="note" style="margin-top:0;">今日から60日間の予定です(スクロールしてすべて確認できます)。「編集」で、その日だけ場所・担当・中止などを変更できます。</p>
         <div id="calendar-list"></div>
       </div>
 
@@ -897,12 +897,12 @@ function renderCalendarList(){
   if (!container) return;
   const today = new Date();
   const rows = [];
-  for (let i = 0; i < 30; i++){
+  for (let i = 0; i < 60; i++){
     const d = new Date(today); d.setDate(d.getDate() + i);
     occurrencesForDate(dateStrOf(d)).forEach(o => rows.push(o));
   }
   container.innerHTML = rows.length === 0
-    ? '<p class="empty">今後30日間の予定はありません。</p>'
+    ? '<p class="empty">今後60日間の予定はありません。</p>'
     : rows.map(calendarRowHTML).join('');
 }
 
